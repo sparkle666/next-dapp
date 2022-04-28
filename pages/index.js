@@ -9,8 +9,9 @@ export default function Home() {
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [hash, setHash] = useState("");
-  
-  const {ethereum} = window
+  const [balance, setBalance] = useState(0);
+
+  // const {ethereum} = window
 
   let blockNum;
   const usdc = {
@@ -24,13 +25,38 @@ export default function Home() {
     ],
   };
 
+  const getContract = async () => {
+    try {
+      const provider = new ethers.providers.Web3Provider(
+        window.ethereum,
+        "any"
+      );
+      // await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const usdcContract = await new ethers.Contract(
+        usdc.address,
+        usdc.abi,
+        signer
+      );
+      return usdcContract;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const displayContract = async () => {
+    const contract = await getContract();
+    const sym = await contract.name();
+    console.log({ contract, sym });
+  };
+
   const connect = async () => {
     // connect to Metamask
 
-    const provider = new ethers.providers.Web3Provider(ethereum, "any");
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    console.log(`Your connected wallet is: ${ethereum.selectedAddress}`)
+    console.log(`Your connected wallet is: ${ethereum.selectedAddress}`);
     let userAddress = await signer.getAddress();
     //console.log(userAddress)
     setAddress(userAddress);
@@ -38,38 +64,39 @@ export default function Home() {
     // Get current block number
     // blockNum = await provider.getBlockNumber();
   };
-  const getUsdc = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-    // await provider.send("eth_requestAccounts", []);
-    const signer = provider.getSigner();
-    const usdcContract = await new ethers.Contract(
-      usdc.address,
-      usdc.abi,
-      signer
-    );
-    const name = await usdcContract.name();
-    const sym = await usdcContract.symbol();
-    const bal = await provider.getBalance(
-      "0x1D3E0725bD6dAf542C780AeDF28553B399556697"
-    );
-    const balEth = ethers.utils.formatEther(bal);
+  const getUsdcDetails = async () => {
     try {
-      
-      const txn = await usdcContract.gimmeSome({ gasPrice: 52399666204 });
-      setLoading(true)
+      const usdcContract = await getContract();
+      const name = await usdcContract.name; // Get name
+      const sym = await usdcContract.symbol; // get symbol
 
-      if(txn){
-        setLoading(false)
+      const balanceUS = await usdcContract.balanceOf(address); //call the usdc contract to get current usdv balance in acc
+      const usdcBal = ethers.utils.formatUnits(balanceUS, 6); // format usdc bal from wei to decimal
+      setBalance(usdcBal);
+      console.log({
+        name,
+        sym,
+        balanceUs,
+        usdcBal,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getUsdc = async () => {
+    const usdcContract = await getContract();
+
+    try {
+      const txn = await usdcContract.gimmeSome({ gasPrice: 52399666204 });
+      setLoading(true);
+
+      if (txn) {
+        setLoading(false);
       }
       // const hash = txn.hash;
-      setHash(txn.hash)
-      console.log({
-        usdcContract,
-        sym,
-        name,
-        balEth,
-        hash,
-      });
+      setHash(txn.hash);
+      console.log(hash);
     } catch (e) {
       console.log(e);
     }
@@ -79,9 +106,15 @@ export default function Home() {
       <button onClick={connect}> Connect </button>
       <p> Your address -{address}</p> <br />
       <p>Blocknum {blockNum} </p>
-      
       <button onClick={getUsdc}> Get Usdc token </button>
-      {hash && <p>Successfull view the transaction here: {`https://ropsten.etherscan.io/tx/${hash}`}</p> }
+      {hash && (
+        <p>
+          Successfull view the transaction here:{" "}
+          {`https://ropsten.etherscan.io/tx/${hash}`}
+        </p>
+      )}
+      <button onClick={displayContract}>Get Fake USDC details</button>
+      <p>You have: {balance} FakeUSDC </p>
       <script src="//cdn.jsdelivr.net/npm/eruda"></script>
       <script>eruda.init();</script>
     </div>
