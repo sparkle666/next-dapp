@@ -11,6 +11,22 @@ export default function Home() {
   const [hash, setHash] = useState("");
   const [balance, setBalance] = useState(0);
   const [estimatedGasPrice, setEstimatedGasPrice] = useState();
+
+  // Handle bulk events using one useState hook, set initial values
+
+  const initialValues = {
+    address: "",
+    amount: "",
+  };
+  // Pass the initail value to a hook
+  const [values, setValues] = useState(initialValues);
+  // Making a one time handle change
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    console.log(e.target);
+    setValues({ ...values, [name]: value });
+  };
   // const {ethereum} = window
   const usdc = {
     address: "0x68ec573C119826db2eaEA1Efbfc2970cDaC869c4",
@@ -123,7 +139,9 @@ export default function Home() {
         <button onClick={connectWallet}>Connect Wallet</button>
       </div>
       <div className="wallet-details">
-        <p>{"Ox90DfG9809wXcc090".slice(0, 6)}...{"Ox90DfG9809wXcc090".slice(-4)}</p>
+        <p>
+          {"Ox90DfG9809wXcc090".slice(0, 6)}...{"Ox90DfG9809wXcc090".slice(-4)}
+        </p>
         <p>{balance.toFixed(2)} FakeUSDC </p>
       </div>
       <div className="card">
@@ -139,8 +157,20 @@ export default function Home() {
         {/* Transfer */}
         <hr />
         <p>Send USDC to another wallet</p>
-        <input type="text" placeholder="Enter wallet address" />
-        <input type="number" placeholder="Enter amount of USDC" />
+        <input
+          type="text"
+          placeholder="Enter wallet address"
+          onChange={handleChange}
+          value={values.address}
+          name="address"
+        />
+        <input
+          type="number"
+          placeholder="Enter amount of USDC"
+          onChange={handleChange}
+          value={values.amount}
+          name="amount"
+        />
         <button onClick={transferToken}>Transfer</button>
       </div>
       {/* Debug stuff */}
