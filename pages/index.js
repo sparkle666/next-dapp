@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import Notifications from "./Notifications";
+import Notifications from "./TransactionDetails";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
 
@@ -10,10 +10,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [hash, setHash] = useState("");
   const [balance, setBalance] = useState(0);
-
+  const [estimatedGasPrice, setEstimatedGasPrice] = useState();
   // const {ethereum} = window
-
-  let blockNum;
   const usdc = {
     address: "0x68ec573C119826db2eaEA1Efbfc2970cDaC869c4",
     abi: [
@@ -32,6 +30,8 @@ export default function Home() {
         "any"
       );
       // await provider.send("eth_requestAccounts", []);
+      const gas = provider.getGasPrice();
+      setEstimatedGasPrice(gas);
       const signer = provider.getSigner();
       const usdcContract = await new ethers.Contract(
         usdc.address,
@@ -43,14 +43,29 @@ export default function Home() {
       console.log(error);
     }
   };
+  // Transfer Fake USDC from one address to another
+  const transferToken = async () => {
+    try {
+      const amount = ethers.utils.parseUnits("10", 6);
 
+      const usdcContract = await getContract();
+      const txn = await usdcContract.transfer(
+        "0xccA6BBb221c3195BdB56F07f720752db000B1E3A",
+        amount,
+        { gasPrice: 52399666204 }
+      );
+      console.log(txn.hash);
+    } catch (e) {
+      console.log(e);
+    }
+  };
   const displayContract = async () => {
     const contract = await getContract();
     const sym = await contract.name();
     console.log({ contract, sym });
   };
 
-  const connect = async () => {
+  const connectWallet = async () => {
     // connect to Metamask
 
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
@@ -102,19 +117,33 @@ export default function Home() {
     }
   };
   return (
-    <div className={styles.container}>
-      <button onClick={connect}> Connect </button>
-      <p> Your address -{address}</p> <br />
-      <p>Blocknum {blockNum} </p>
-      <button onClick={getUsdc}> Get Usdc token </button>
-      {hash && (
-        <p>
-          Successfull view the transaction here:{" "}
-          {`https://ropsten.etherscan.io/tx/${hash}`}
-        </p>
-      )}
-      <button onClick={displayContract}>Get Fake USDC details</button>
-      <p>You have: {balance} FakeUSDC </p>
+    <div className="container">
+      <div className="header">
+        <h2>Smart Contract Dapp</h2>
+        <button onClick={connectWallet}>Connect Wallet</button>
+      </div>
+      <div className="wallet-details">
+        <p>{"Ox90DfG9809wXcc090".slice(0, 6)}...{"Ox90DfG9809wXcc090".slice(-4)}</p>
+        <p>{balance.toFixed(2)} FakeUSDC </p>
+      </div>
+      <div className="card">
+        <button onClick={getUsdc}> Mint USDC token </button>
+        {hash && (
+          <p>
+            Successfull view the transaction here:{" "}
+            {`https://ropsten.etherscan.io/tx/${hash}`}
+          </p>
+        )}
+        <button onClick={displayContract}>Get Fake USDC details</button>
+
+        {/* Transfer */}
+        <hr />
+        <p>Send USDC to another wallet</p>
+        <input type="text" placeholder="Enter wallet address" />
+        <input type="number" placeholder="Enter amount of USDC" />
+        <button onClick={transferToken}>Transfer</button>
+      </div>
+      {/* Debug stuff */}
       <script src="//cdn.jsdelivr.net/npm/eruda"></script>
       <script>eruda.init();</script>
     </div>
