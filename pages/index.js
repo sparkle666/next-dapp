@@ -12,8 +12,12 @@ export default function Home() {
   const [balance, setBalance] = useState(0);
   const [estimatedGasPrice, setEstimatedGasPrice] = useState();
 
-  // Handle bulk events using one useState hook, set initial values
+  useEffect(() => {
+    window.localStorage.setItem("address", address);
+    window.localStorage.setItem("details", "{ name: 'james' }");
+  }, [address]);
 
+  // Handle bulk events using one useState hook, set initial values
   const initialValues = {
     address: "",
     amount: "",
@@ -140,7 +144,7 @@ export default function Home() {
       </div>
       <div className="wallet-details">
         <p>
-          {"Ox90DfG9809wXcc090".slice(0, 6)}...{"Ox90DfG9809wXcc090".slice(-4)}
+          {address.slice(0, 6)}...{address.slice(-4)}
         </p>
         <p>{balance.toFixed(2)} FakeUSDC </p>
       </div>
