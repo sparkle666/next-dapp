@@ -77,9 +77,9 @@ export default function Home() {
   const transferToken = async () => {
     try {
       // const formattedAmount = ethers.utils.parseUnits("1", 6);
-      const {address, amount} = values
-      const formattedAmount = amount * Math.pow(10, 6)
-      console.log(formattedAmount)
+      const { address, amount } = values;
+      const formattedAmount = amount * Math.pow(10, 6);
+      console.log(formattedAmount);
       const usdcContract = await getContract();
       const txn = await usdcContract.transfer(
         // "0xccA6BBb221c3195BdB56F07f720752db000B1E3A",
@@ -91,14 +91,8 @@ export default function Home() {
       console.log(txn.hash);
     } catch (e) {
       console.log(e);
-      setMessage(e.message)
+      setMessage(e.message);
     }
-  };
-
-  const displayContract = async () => {
-    const contract = await getContract();
-    const sym = await contract.name();
-    console.log({ contract, sym });
   };
 
   const connectWallet = async () => {
@@ -111,24 +105,29 @@ export default function Home() {
     let userAddress = await signer.getAddress();
     //console.log(userAddress)
     setAddress(userAddress);
-
-    // Get current block number
-    // blockNum = await provider.getBlockNumber();
+    const usdcContract = await getContract();
+    const bal = await usdcContract.balanceOf(
+      address.toString()
+    ); // returns a hex in 6 decimals
+    // const usdcBal = ethers.utils.formatUnits(balanceUS, 6); // format usdc bal from wei to decimal
+    setBalance(ethers.utils.formatUnits(bal, 6));
   };
   const getUsdcDetails = async () => {
     try {
       const usdcContract = await getContract();
-      const name = await usdcContract.name; // Get name
-      const sym = await usdcContract.symbol; // get symbol
+      // const name = await usdcContract.name; // Get name
+      // const sym = await usdcContract.symbol; // get symbol
 
-      const bal = await usdcContract.balanceOf("0xccA6BBb221c3195BdB56F07f720752db000B1E3A"); // returns a hex in 6 decimals
+      const bal = await usdcContract.balanceOf(
+        "0xccA6BBb221c3195BdB56F07f720752db000B1E3A"
+      ); // returns a hex in 6 decimals
       // const usdcBal = ethers.utils.formatUnits(balanceUS, 6); // format usdc bal from wei to decimal
       setBalance(ethers.utils.formatUnits(bal, 6));
-      console.log({
-        name,
-        sym,
-        bal
-      });
+      // console.log({
+      //   name,
+      //   sym,
+      //   bal
+      // });
     } catch (error) {
       console.log(error.message);
     }
@@ -172,7 +171,7 @@ export default function Home() {
             {`https://ropsten.etherscan.io/tx/${hash}`}
           </p>
         )}
-        <button onClick={getUsdcDetails}>Get Fake USDC details</button>
+        {/* <button onClick={getUsdcDetails}>Get Fake USDC details</button> */}
 
         {/* Transfer */}
         <hr />
