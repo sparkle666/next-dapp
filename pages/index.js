@@ -8,10 +8,9 @@ import { useState, useEffect } from "react";
 export default function Home() {
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
-  const [hash, setHash] = useState("");
+  const [hash, setHash] = useState({});
   const [message, setMessage] = useState("");
   const [balance, setBalance] = useState(0);
-  const [estimatedGasPrice, setEstimatedGasPrice] = useState();
   const [hasMetamask, setHasMetamask] = useState(false);
 
   useEffect(() => {
@@ -59,9 +58,7 @@ export default function Home() {
         window.ethereum,
         "any"
       );
-      // await provider.send("eth_requestAccounts", []);
-      const gas = provider.getGasPrice();
-      setEstimatedGasPrice(gas);
+      // await provider.send("eth_requestAccounts", [])
       const signer = provider.getSigner();
       const usdcContract = await new ethers.Contract(
         usdc.address,
@@ -112,28 +109,8 @@ export default function Home() {
     // const usdcBal = ethers.utils.formatUnits(balanceUS, 6); // format usdc bal from wei to decimal
     setBalance(ethers.utils.formatUnits(bal, 6));
   };
-  const getUsdcDetails = async () => {
-    try {
-      const usdcContract = await getContract();
-      // const name = await usdcContract.name; // Get name
-      // const sym = await usdcContract.symbol; // get symbol
 
-      const bal = await usdcContract.balanceOf(
-        "0xccA6BBb221c3195BdB56F07f720752db000B1E3A"
-      ); // returns a hex in 6 decimals
-      // const usdcBal = ethers.utils.formatUnits(balanceUS, 6); // format usdc bal from wei to decimal
-      setBalance(ethers.utils.formatUnits(bal, 6));
-      // console.log({
-      //   name,
-      //   sym,
-      //   bal
-      // });
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
-  const getUsdc = async () => {
+  const mintUsdc = async () => {
     const usdcContract = await getContract();
 
     try {
@@ -164,7 +141,7 @@ export default function Home() {
       </div>
       <p>{message}</p>
       <div className="card">
-        <button onClick={getUsdc}> Mint USDC token </button>
+        <button onClick={mintUsdc}> Mint USDC token </button>
         {hash && (
           <p>
             Successfull view the transaction here:{" "}
