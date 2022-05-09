@@ -98,7 +98,7 @@ export default function Home() {
       await txn.wait();
       if (txn.hash) setTransferLoading(false);
       // console.log(txn.hash);
-      toast.success(`Transfer Successful!! Hash: ${txn.hash}`);
+      toast.success(`Transfer Successful!! Hash: ${txn.hash.slice(0, 6)}...`);
     } catch (e) {
       toast.error(e.message);
     }
@@ -136,9 +136,10 @@ export default function Home() {
       // setHash(txn.hash);
       hash.push(txn.hash);
       console.log(hash);
+      toast.success(`Minted USDC!! Hash: ${txn.hash.slice(0, 6)}...`);
     } catch (e) {
       setMintLoading(false);
-      console.log(e);
+      toast.error(e.message);
     }
   };
   return (
