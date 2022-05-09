@@ -1,9 +1,10 @@
-import Head from "next/head";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import Notifications from "./TransactionDetails";
+// import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+// import Audio from "react-loader-spinner";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
+import Loader from "../components/Loader";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Home() {
   const [address, setAddress] = useState("");
@@ -77,6 +78,12 @@ export default function Home() {
     try {
       // const formattedAmount = ethers.utils.parseUnits("1", 6);
       const { address, amount } = values;
+      if (!address || !amount) {
+        setTransferLoading(false);
+        console.log("Invalid inputs...");
+        toast.error("Please enter a valid address and amount!");
+        return;
+      }
       const formattedAmount = amount * Math.pow(10, 6);
       console.log(formattedAmount);
       const usdcContract = await getContract();
@@ -90,10 +97,10 @@ export default function Home() {
       );
       await txn.wait();
       if (txn.hash) setTransferLoading(false);
-      console.log(txn.hash);
+      // console.log(txn.hash);
+      toast.success(`Transfer Successful!! Hash: ${txn.hash}`);
     } catch (e) {
-      console.log(e);
-      setMessage(e.message);
+      toast.error(e.message);
     }
   };
 
@@ -118,9 +125,9 @@ export default function Home() {
   const mintUsdc = async () => {
     const usdcContract = await getContract();
 
+    setMintLoading(true);
     try {
       const txn = await usdcContract.gimmeSome({ gasPrice: 52399666204 });
-      setMintLoading(true);
       await txn.wait();
       if (txn.hash) {
         setMintLoading(false);
@@ -130,6 +137,7 @@ export default function Home() {
       hash.push(txn.hash);
       console.log(hash);
     } catch (e) {
+      setMintLoading(false);
       console.log(e);
     }
   };
@@ -150,9 +158,18 @@ export default function Home() {
         <p>{balance} FakeUSDC </p>
       </div>
       {/* <p>{message}</p> */}
+      {/* <Audio height="100" width="100" color="blueviolet" ariaLabel="loading" /> */}
       <div className="card">
         {mintLoading ? (
-          "Loading"
+          <div>
+            {/* <Audio
+              height="100"
+              width="100"
+              color="purple"
+              ariaLabel="loading"
+            /> */}
+            <Loader />
+          </div>
         ) : (
           <button onClick={mintUsdc}> Mint USDC token </button>
         )}
@@ -174,6 +191,7 @@ export default function Home() {
           onChange={handleChange}
           value={values.address}
           name="address"
+          required
         />
         <input
           type="number"
@@ -181,16 +199,16 @@ export default function Home() {
           onChange={handleChange}
           value={values.amount}
           name="amount"
+          required
         />
         {transferLoading ? (
-          <button disabled>Loading</button>
+          // <Audio height="100" width="100" color="purple" ariaLabel="loading" />
+          <Loader />
         ) : (
           <button onClick={transferToken}>Transfer</button>
         )}
       </div>
-      {/* Debug stuff */}
-      {/* <script src="//cdn.jsdelivr.net/npm/eruda"></script>
-      <script>eruda.init();</script> */}
+      <ToastContainer />
     </div>
   );
 }
