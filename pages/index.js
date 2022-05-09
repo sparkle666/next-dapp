@@ -7,8 +7,10 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
   const [address, setAddress] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [hash, setHash] = useState({});
+  const [connected, setConnected] = useState(false);
+  const [mintLoading, setMintLoading] = useState(false);
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [hash, setHash] = useState([]);
   const [message, setMessage] = useState("");
   const [balance, setBalance] = useState(0);
   const [hasMetamask, setHasMetamask] = useState(false);
@@ -17,8 +19,8 @@ export default function Home() {
     if (window.ethereum) setHasMetamask(true); // If metamask installed set it to true
 
     window.localStorage.setItem("address", address);
-    window.localStorage.setItem("details", "{ name: 'james' }");
-  }, [address]);
+    window.localStorage.setItem("transactionHash", hash);
+  }, [address, hash]);
 
   // Handle bulk events using one useState hook, set initial values
   const initialValues = {
@@ -78,6 +80,7 @@ export default function Home() {
       const formattedAmount = amount * Math.pow(10, 6);
       console.log(formattedAmount);
       const usdcContract = await getContract();
+      setTransferLoading(true);
       const txn = await usdcContract.transfer(
         // "0xccA6BBb221c3195BdB56F07f720752db000B1E3A",
         address,
@@ -85,6 +88,8 @@ export default function Home() {
         // "10",
         { gasPrice: 52399666204 }
       );
+      await txn.wait();
+      if (txn.hash) setTransferLoading(false);
       console.log(txn.hash);
     } catch (e) {
       console.log(e);
@@ -99,13 +104,13 @@ export default function Home() {
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
     console.log(`Your connected wallet is: ${ethereum.selectedAddress}`);
+    setConnected(true);
     let userAddress = await signer.getAddress();
     //console.log(userAddress)
     setAddress(userAddress);
     const usdcContract = await getContract();
-    const bal = await usdcContract.balanceOf(
-      address.toString()
-    ); // returns a hex in 6 decimals
+    console.log(userAddress);
+    const bal = await usdcContract.balanceOf(userAddress.toString()); // returns a hex in 6 decimals
     // const usdcBal = ethers.utils.formatUnits(balanceUS, 6); // format usdc bal from wei to decimal
     setBalance(ethers.utils.formatUnits(bal, 6));
   };
@@ -115,13 +120,14 @@ export default function Home() {
 
     try {
       const txn = await usdcContract.gimmeSome({ gasPrice: 52399666204 });
-      setLoading(true);
-
-      if (txn) {
-        setLoading(false);
+      setMintLoading(true);
+      await txn.wait();
+      if (txn.hash) {
+        setMintLoading(false);
       }
       // const hash = txn.hash;
-      setHash(txn.hash);
+      // setHash(txn.hash);
+      hash.push(txn.hash);
       console.log(hash);
     } catch (e) {
       console.log(e);
@@ -131,7 +137,11 @@ export default function Home() {
     <div className="container">
       <div className="header">
         <h2>Smart Contract Dapp</h2>
-        {hasMetamask && <button onClick={connectWallet}>Connect Wallet</button>}
+        {connected ? (
+          <button>Connected!!</button>
+        ) : (
+          <button onClick={connectWallet}>Connect Wallet</button>
+        )}
       </div>
       <div className="wallet-details">
         <p>
@@ -139,15 +149,20 @@ export default function Home() {
         </p>
         <p>{balance} FakeUSDC </p>
       </div>
-      <p>{message}</p>
+      {/* <p>{message}</p> */}
       <div className="card">
-        <button onClick={mintUsdc}> Mint USDC token </button>
-        {hash && (
+        {mintLoading ? (
+          "Loading"
+        ) : (
+          <button onClick={mintUsdc}> Mint USDC token </button>
+        )}
+
+        {/* {hash && (
           <p>
             Successfull view the transaction here:{" "}
             {`https://ropsten.etherscan.io/tx/${hash}`}
           </p>
-        )}
+        )} */}
         {/* <button onClick={getUsdcDetails}>Get Fake USDC details</button> */}
 
         {/* Transfer */}
@@ -167,7 +182,11 @@ export default function Home() {
           value={values.amount}
           name="amount"
         />
-        <button onClick={transferToken}>Transfer</button>
+        {transferLoading ? (
+          <button disabled>Loading</button>
+        ) : (
+          <button onClick={transferToken}>Transfer</button>
+        )}
       </div>
       {/* Debug stuff */}
       {/* <script src="//cdn.jsdelivr.net/npm/eruda"></script>
