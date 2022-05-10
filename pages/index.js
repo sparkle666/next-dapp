@@ -12,7 +12,6 @@ export default function Home() {
   const [mintLoading, setMintLoading] = useState(false);
   const [transferLoading, setTransferLoading] = useState(false);
   const [hash, setHash] = useState([]);
-  const [message, setMessage] = useState("");
   const [balance, setBalance] = useState(0);
   const [hasMetamask, setHasMetamask] = useState(false);
 
@@ -100,6 +99,7 @@ export default function Home() {
       // console.log(txn.hash);
       toast.success(`Transfer Successful!! Hash: ${txn.hash.slice(0, 6)}...`);
     } catch (e) {
+      setTransferLoading(false);
       toast.error(e.message);
     }
   };
@@ -118,7 +118,6 @@ export default function Home() {
     const usdcContract = await getContract();
     console.log(userAddress);
     const bal = await usdcContract.balanceOf(userAddress.toString()); // returns a hex in 6 decimals
-    // const usdcBal = ethers.utils.formatUnits(balanceUS, 6); // format usdc bal from wei to decimal
     setBalance(ethers.utils.formatUnits(bal, 6));
   };
 
@@ -132,8 +131,6 @@ export default function Home() {
       if (txn.hash) {
         setMintLoading(false);
       }
-      // const hash = txn.hash;
-      // setHash(txn.hash);
       hash.push(txn.hash);
       console.log(hash);
       toast.success(`Minted USDC!! Hash: ${txn.hash.slice(0, 6)}...`);
@@ -158,17 +155,9 @@ export default function Home() {
         </p>
         <p>{balance} FakeUSDC </p>
       </div>
-      {/* <p>{message}</p> */}
-      {/* <Audio height="100" width="100" color="blueviolet" ariaLabel="loading" /> */}
       <div className="card">
         {mintLoading ? (
           <div>
-            {/* <Audio
-              height="100"
-              width="100"
-              color="purple"
-              ariaLabel="loading"
-            /> */}
             <Loader />
           </div>
         ) : (
@@ -181,7 +170,6 @@ export default function Home() {
             {`https://ropsten.etherscan.io/tx/${hash}`}
           </p>
         )} */}
-        {/* <button onClick={getUsdcDetails}>Get Fake USDC details</button> */}
 
         {/* Transfer */}
         <hr />
