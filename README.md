@@ -2,10 +2,13 @@ A web 3 Dapp built with Nextjs that interacts with a smart contract, send tokens
 ![Screenshot](next-dapp.PNG)
 ## Getting Started
 
-Clone the repository:
+#### Clone the repository:
 ``` git clone https://github.com/sparkle666/next-dapp ```
-cd into next-dapp and run:
+
+#### cd into next-dapp and run:
+
 ``` yarn install ```
+
 Then, run the development server:
 
 ```bash
