@@ -110,11 +110,12 @@ export default function Home() {
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    console.log(`Your connected wallet is: ${ethereum.selectedAddress}`);
+    
     setConnected(true);
-    let userAddress = await signer.getAddress();
+    const userAddress = await signer.getAddress();
     //console.log(userAddress)
     setAddress(userAddress);
+    getAddressHistory(userAddress) // calls etherscan to get all transactions on address
     const usdcContract = await getContract();
     console.log(userAddress);
     const bal = await usdcContract.balanceOf(userAddress.toString()); // returns a hex in 6 decimals
@@ -126,8 +127,9 @@ export default function Home() {
 
     setMintLoading(true);
     try {
-      const txn = await usdcContract.gimmeSome({ gasPrice: 52399666204 });
+      const txn = await usdcContract.gimmeSome({ gasPrice: 189444046810 });
       await txn.wait();
+      console.log(`Transaction details ${txn}`);
       if (txn.hash) {
         setMintLoading(false);
       }
@@ -137,7 +139,14 @@ export default function Home() {
     } catch (e) {
       setMintLoading(false);
       toast.error(e.message);
+      console.log(e.message);
     }
+  };
+  // Get wallet history
+  const getAddressHistory = async (address) => {
+    const etherscanProvider = new ethers.providers.EtherscanProvider("ropsten", "VN1H5HVA9JETRCGCFI9XKMS79KJYUDUKF5");
+    const history = await etherscanProvider.getHistory(address)
+    console.log(history)
   };
   return (
     <div className="container">
